@@ -1,56 +1,29 @@
-interface GraphQLResponse<T = any> {
-  data?: T;
-  errors?: Array<{
-    message: string;
-    locations?: Array<{
-      line: number;
-      column: number;
-    }>;
-    path?: Array<string | number>;
-  }>;
-}
+import { cacheExchange, createClient, fetchExchange } from "@urql/core";
+import { initGraphQLTada } from "gql.tada";
+import type { TypedObject } from "sanity";
+import type { introspection } from "./graphql-env";
 
-export async function fetchGraphQL<T = any>(
-  query: string,
-  variables?: Record<string, any>,
-): Promise<T> {
+export function createGraphQLClient() {
   const url = process.env.NEXT_PUBLIC_SANITY_GRAPHQL_URL;
 
   if (!url) {
     throw new Error("NEXT_PUBLIC_SANITY_GRAPHQL_URL is not configured");
   }
 
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...(process.env.SANITY_API_TOKEN && {
-        Authorization: `Bearer ${process.env.SANITY_API_TOKEN}`,
-      }),
-    },
-    body: JSON.stringify({
-      query,
-      variables,
-    }),
+  return createClient({
+    url,
+    exchanges: [cacheExchange, fetchExchange],
   });
-
-  if (!response.ok) {
-    throw new Error(
-      `GraphQL request failed: ${response.status} ${response.statusText}`,
-    );
-  }
-
-  const result: GraphQLResponse<T> = await response.json();
-
-  if (result.errors) {
-    throw new Error(
-      `GraphQL errors: ${result.errors.map((e) => e.message).join(", ")}`,
-    );
-  }
-
-  if (!result.data) {
-    throw new Error("No data returned from GraphQL query");
-  }
-
-  return result.data;
 }
+
+export const graphql = initGraphQLTada<{
+  introspection: introspection;
+  scalars: {
+    DateTime: string;
+    Date: string;
+    JSON: TypedObject | TypedObject[];
+  };
+}>();
+
+export type { FragmentOf, ResultOf, VariablesOf } from "gql.tada";
+export { readFragment } from "gql.tada";

@@ -1,10 +1,12 @@
+import { PortableText } from "@portabletext/react";
+import { registerUrql } from "@urql/next/rsc";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { fetchGraphQL } from "@/lib/graphql";
-import { GET_POST_BY_SLUG, GET_POST_SLUGS } from "@/lib/queries";
-import type { PostsQueryResult } from "@/lib/types";
+import { createGraphQLClient, graphql } from "@/lib/graphql";
 
 export const revalidate = 60; // ISR: Revalidate every 60 seconds
+
+const { getClient } = registerUrql(createGraphQLClient);
 
 interface PostPageProps {
   params: Promise<{
@@ -12,11 +14,33 @@ interface PostPageProps {
   }>;
 }
 
+const GET_POST_SLUGS = graphql(`
+  query GetPostSlugs {
+    allPost {
+      slug {
+        current
+      }
+    }
+  }
+`);
+
+const GET_POST_BY_SLUG = graphql(`
+  query GetPostBySlug($slug: String!) {
+    allPost(where: { slug: { current: { eq: $slug } } }, limit: 1) {
+      _id
+      title
+      excerpt
+    contentRaw
+      publishedAt
+    }
+  }
+`);
+
 export async function generateStaticParams() {
   try {
-    const data = await fetchGraphQL<PostsQueryResult>(GET_POST_SLUGS);
-    return data.allPost.map((post) => ({
-      slug: post.slug.current,
+    const { data } = await getClient().query(GET_POST_SLUGS, {});
+    return data?.allPost.map((post) => ({
+      slug: post.slug?.current,
     }));
   } catch (error) {
     console.error("Error generating static params:", error);
@@ -27,18 +51,8 @@ export async function generateStaticParams() {
 export default async function PostPage({ params }: PostPageProps) {
   const { slug } = await params;
 
-  let post = null;
-  let error: string | null = null;
-
-  try {
-    const data = await fetchGraphQL<PostsQueryResult>(GET_POST_BY_SLUG, {
-      slug,
-    });
-    post = data.allPost[0];
-  } catch (err) {
-    error = err instanceof Error ? err.message : "Failed to fetch post";
-    console.error("Error fetching post:", err);
-  }
+  const { data, error } = await getClient().query(GET_POST_BY_SLUG, { slug });
+  const post = data?.allPost[0];
 
   if (error) {
     return (
@@ -48,7 +62,7 @@ export default async function PostPage({ params }: PostPageProps) {
             <h1 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
               Error loading post
             </h1>
-            <p className="text-red-600 dark:text-red-300">{error}</p>
+            <p className="text-red-600 dark:text-red-300">{error.message}</p>
             <Link
               href="/"
               className="inline-block mt-4 text-blue-600 dark:text-blue-400 hover:underline"
@@ -65,6 +79,8 @@ export default async function PostPage({ params }: PostPageProps) {
     notFound();
   }
 
+  const publishedAt = post.publishedAt;
+
   return (
     <div className="min-h-screen p-8 pb-20 gap-16 sm:p-20">
       <main className="max-w-4xl mx-auto">
@@ -77,16 +93,18 @@ export default async function PostPage({ params }: PostPageProps) {
               ← Back to posts
             </Link>
             <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
-            <time
-              dateTime={post.publishedAt}
-              className="text-gray-600 dark:text-gray-400"
-            >
-              {new Date(post.publishedAt).toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </time>
+            {publishedAt && (
+              <time
+                dateTime={publishedAt}
+                className="text-gray-600 dark:text-gray-400"
+              >
+                {new Date(publishedAt).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </time>
+            )}
           </header>
 
           {post.excerpt && (
@@ -95,12 +113,9 @@ export default async function PostPage({ params }: PostPageProps) {
             </div>
           )}
 
-          {post.content && (
+          {post.contentRaw && (
             <div className="prose prose-lg dark:prose-invert max-w-none">
-              {/* For now, just show raw content - you can add a proper Portable Text renderer later */}
-              <pre className="whitespace-pre-wrap bg-gray-50 dark:bg-gray-900 p-4 rounded-lg overflow-auto">
-                {JSON.stringify(post.content, null, 2)}
-              </pre>
+              <PortableText value={post.contentRaw} />
             </div>
           )}
         </article>

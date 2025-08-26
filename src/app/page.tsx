@@ -1,24 +1,32 @@
+import { registerUrql } from "@urql/next/rsc";
+import { graphql } from "gql.tada";
 import Link from "next/link";
-import { fetchGraphQL } from "@/lib/graphql";
-import { GET_ALL_POSTS } from "@/lib/queries";
-import type { PostsQueryResult } from "@/lib/types";
+import { createGraphQLClient } from "@/lib/graphql";
 
 export const revalidate = 60; // ISR: Revalidate every 60 seconds
 
-export default async function Home() {
-  let posts: PostsQueryResult["allPost"] = [];
-  let error: string | null = null;
-
-  try {
-    const data = await fetchGraphQL<PostsQueryResult>(GET_ALL_POSTS, {
-      limit: 10,
-      offset: 0,
-    });
-    posts = data.allPost;
-  } catch (err) {
-    error = err instanceof Error ? err.message : "Failed to fetch posts";
-    console.error("Error fetching posts:", err);
+const GET_ALL_POSTS = graphql(`
+  query GetAllPosts($limit: Int, $offset: Int) {
+    allPost(limit: $limit, offset: $offset, sort: [{ publishedAt: DESC }]) {
+      _id
+      title
+      slug {
+        current
+      }
+      excerpt
+      publishedAt
+    }
   }
+`);
+
+const { getClient } = registerUrql(createGraphQLClient);
+
+export default async function Home() {
+  const { data, error } = await getClient().query(GET_ALL_POSTS, {
+    limit: 10,
+    offset: 0,
+  });
+  const posts = data?.allPost ?? [];
 
   return (
     <div className="min-h-screen p-8 pb-20 gap-16 sm:p-20">
@@ -35,7 +43,7 @@ export default async function Home() {
             <h2 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
               Error loading posts
             </h2>
-            <p className="text-red-600 dark:text-red-300">{error}</p>
+            <p className="text-red-600 dark:text-red-300">{error.message}</p>
             <p className="text-sm text-red-500 dark:text-red-400 mt-2">
               Make sure your Sanity GraphQL API is deployed and environment
               variables are configured.
@@ -57,7 +65,7 @@ export default async function Home() {
               >
                 <h2 className="text-2xl font-semibold mb-3">
                   <Link
-                    href={`/posts/${post.slug.current}`}
+                    href={`/posts/${post.slug?.current}`}
                     className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                   >
                     {post.title}
@@ -77,7 +85,7 @@ export default async function Home() {
                     })}
                   </time>
                   <Link
-                    href={`/posts/${post.slug.current}`}
+                    href={`/posts/${post.slug?.current}`}
                     className="text-blue-600 dark:text-blue-400 hover:underline"
                   >
                     Read more →
