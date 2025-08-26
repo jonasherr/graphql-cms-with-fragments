@@ -32,9 +32,6 @@ export async function fetchGraphQL<T = any>(
       query,
       variables,
     }),
-    next: {
-      revalidate: 60, // Cache for 60 seconds by default
-    },
   });
 
   if (!response.ok) {
