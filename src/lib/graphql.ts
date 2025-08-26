@@ -1,7 +1,7 @@
 import { cacheExchange, createClient, fetchExchange } from "@urql/core";
 import { initGraphQLTada } from "gql.tada";
 import type { TypedObject } from "sanity";
-import type { introspection } from "./graphql-env";
+import type { introspection } from "./generated/graphql-env";
 
 export function createGraphQLClient() {
   const url = process.env.NEXT_PUBLIC_SANITY_GRAPHQL_URL;

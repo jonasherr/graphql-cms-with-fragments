@@ -30,7 +30,7 @@ const GET_POST_BY_SLUG = graphql(`
       _id
       title
       excerpt
-    contentRaw
+      contentRaw
       publishedAt
     }
   }
