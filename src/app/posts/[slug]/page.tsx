@@ -39,9 +39,13 @@ const GET_POST_BY_SLUG = graphql(`
 export async function generateStaticParams() {
   try {
     const { data } = await getClient().query(GET_POST_SLUGS, {});
-    return data?.allPost.map((post) => ({
-      slug: post.slug?.current,
-    }));
+    return (
+      data?.allPost
+        .filter((post) => post.slug?.current)
+        .map((post) => ({
+          slug: post.slug?.current,
+        })) ?? []
+    );
   } catch (error) {
     console.error("Error generating static params:", error);
     return [];
