@@ -1,23 +1,20 @@
 import { registerUrql } from "@urql/next/rsc";
 import { graphql } from "gql.tada";
-import Link from "next/link";
 import { createGraphQLClient } from "@/lib/graphql";
+import { PostsList, postsListFragment } from "@/components/posts/PostsList";
 
 export const revalidate = 60; // ISR: Revalidate every 60 seconds
 
-const GET_ALL_POSTS = graphql(`
+const GET_ALL_POSTS = graphql(
+  `
   query GetAllPosts($limit: Int, $offset: Int) {
     allPost(limit: $limit, offset: $offset, sort: [{ publishedAt: DESC }]) {
-      _id
-      title
-      slug {
-        current
-      }
-      excerpt
-      publishedAt
+      ...PostsList
     }
   }
-`);
+`,
+  [postsListFragment],
+);
 
 const { getClient } = registerUrql(createGraphQLClient);
 
@@ -38,63 +35,7 @@ export default async function Home() {
           </p>
         </header>
 
-        {error ? (
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
-            <h2 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
-              Error loading posts
-            </h2>
-            <p className="text-red-600 dark:text-red-300">{error.message}</p>
-            <p className="text-sm text-red-500 dark:text-red-400 mt-2">
-              Make sure your Sanity GraphQL API is deployed and environment
-              variables are configured.
-            </p>
-          </div>
-        ) : posts.length === 0 ? (
-          <div className="text-center py-16">
-            <h2 className="text-2xl font-semibold mb-4">No posts found</h2>
-            <p className="text-gray-600 dark:text-gray-400">
-              Create some posts in your Sanity Studio to see them here.
-            </p>
-          </div>
-        ) : (
-          <div className="grid gap-8">
-            {posts.map((post) => (
-              <article
-                key={post._id}
-                className="border border-gray-200 dark:border-gray-800 rounded-lg p-6 hover:shadow-lg transition-shadow"
-              >
-                <h2 className="text-2xl font-semibold mb-3">
-                  <Link
-                    href={`/posts/${post.slug?.current}`}
-                    className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                  >
-                    {post.title}
-                  </Link>
-                </h2>
-                {post.excerpt && (
-                  <p className="text-gray-600 dark:text-gray-400 mb-4">
-                    {post.excerpt}
-                  </p>
-                )}
-                <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-500">
-                  <time dateTime={post.publishedAt}>
-                    {new Date(post.publishedAt).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </time>
-                  <Link
-                    href={`/posts/${post.slug?.current}`}
-                    className="text-blue-600 dark:text-blue-400 hover:underline"
-                  >
-                    Read more →
-                  </Link>
-                </div>
-              </article>
-            ))}
-          </div>
-        )}
+        <PostsList posts={posts} error={error} />
       </main>
     </div>
   );

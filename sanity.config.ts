@@ -1,7 +1,7 @@
 import { visionTool } from "@sanity/vision";
 import { defineConfig } from "sanity";
 import { structureTool } from "sanity/structure";
-import { schema } from "@/lib/schema";
+import { schema } from "./src/lib/schema";
 
 export default defineConfig({
   name: "default",
