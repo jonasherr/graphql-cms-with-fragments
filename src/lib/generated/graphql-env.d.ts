@@ -899,10 +899,6 @@ export type introspection_types = {
         name: "slug";
         type: { kind: "OBJECT"; name: "Slug"; ofType: null };
       };
-      test: {
-        name: "test";
-        type: { kind: "SCALAR"; name: "DateTime"; ofType: null };
-      };
       title: {
         name: "title";
         type: { kind: "SCALAR"; name: "String"; ofType: null };
@@ -973,11 +969,6 @@ export type introspection_types = {
         type: { kind: "INPUT_OBJECT"; name: "DatetimeFilter"; ofType: null };
         defaultValue: null;
       },
-      {
-        name: "test";
-        type: { kind: "INPUT_OBJECT"; name: "DatetimeFilter"; ofType: null };
-        defaultValue: null;
-      },
     ];
   };
   PostSorting: {
@@ -1032,11 +1023,6 @@ export type introspection_types = {
       },
       {
         name: "publishedAt";
-        type: { kind: "ENUM"; name: "SortOrder"; ofType: null };
-        defaultValue: null;
-      },
-      {
-        name: "test";
         type: { kind: "ENUM"; name: "SortOrder"; ofType: null };
         defaultValue: null;
       },
