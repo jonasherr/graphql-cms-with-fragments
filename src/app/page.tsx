@@ -1,6 +1,6 @@
 import { registerUrql } from "@urql/next/rsc";
-import { Navigation, navigationFragment } from "@/components/layout/Navigation";
-import { Footer, footerFragment } from "@/components/layout/Footer";
+import { Footer, footerFragment } from "@/components/layout/footer";
+import { Navigation, navigationFragment } from "@/components/layout/navigation";
 import { PostsList, postsListFragment } from "@/components/posts/PostsList";
 import { createGraphQLClient, graphql } from "@/lib/graphql";
 

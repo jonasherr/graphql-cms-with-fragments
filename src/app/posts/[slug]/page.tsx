@@ -3,8 +3,8 @@ import { registerUrql } from "@urql/next/rsc";
 import { graphql } from "gql.tada";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Navigation, navigationFragment } from "@/components/layout/Navigation";
-import { Footer, footerFragment } from "@/components/layout/Footer";
+import { Footer, footerFragment } from "@/components/layout/footer";
+import { Navigation, navigationFragment } from "@/components/layout/navigation";
 import { createGraphQLClient } from "@/lib/graphql";
 
 export const revalidate = 60; // ISR: Revalidate every 60 seconds
