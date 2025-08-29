@@ -1,5 +1,5 @@
 import { type FragmentOf, graphql, readFragment } from "@/lib/graphql";
-import { PostCard, postCardFragment } from "./PostCard";
+import { PostCard, postCardFragment } from "./post-card";
 
 export const postsListFragment = graphql(
   `

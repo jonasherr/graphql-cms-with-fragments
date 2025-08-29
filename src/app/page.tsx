@@ -1,7 +1,7 @@
 import { registerUrql } from "@urql/next/rsc";
 import { Footer, footerFragment } from "@/components/layout/footer";
 import { Navigation, navigationFragment } from "@/components/layout/navigation";
-import { PostsList, postsListFragment } from "@/components/posts/PostsList";
+import { PostsList, postsListFragment } from "@/components/posts/posts-list";
 import { createGraphQLClient, graphql } from "@/lib/graphql";
 
 export const revalidate = 60;

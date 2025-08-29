@@ -12,6 +12,7 @@
 - **Imports**: Auto-organized by Biome, use `@/*` for src imports
 - **Types**: Strict TypeScript, explicit types for props/exports
 - **Naming**: camelCase for variables/functions, PascalCase for components
+- **Component Files**: Use kebab-case for component filenames (e.g., `my-component.tsx`)
 - **Components**: Function declarations with explicit return types when complex
 - **Error Handling**: Use TypeScript strict mode, handle async errors properly
 
