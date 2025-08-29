@@ -37,6 +37,10 @@ type RootQuery {
     """Navigation document ID"""
     id: ID!
   ): Navigation
+  Footer(
+    """Footer document ID"""
+    id: ID!
+  ): Footer
   Document(
     """Document document ID"""
     id: ID!
@@ -81,6 +85,16 @@ type RootQuery {
     """Offset at which to start returning documents from"""
     offset: Int
   ): [Navigation!]!
+  allFooter(
+    where: FooterFilter
+    sort: [FooterSorting!]
+
+    """Max documents to return"""
+    limit: Int
+
+    """Offset at which to start returning documents from"""
+    offset: Int
+  ): [Footer!]!
   allDocument(
     where: DocumentFilter
     sort: [DocumentSorting!]
@@ -311,6 +325,50 @@ type NavigationItem {
   label: String
   href: String
   isExternal: Boolean
+}
+
+type Footer implements Document {
+  """Document ID"""
+  _id: ID
+
+  """Document type"""
+  _type: String
+
+  """Date the document was created"""
+  _createdAt: DateTime
+
+  """Date the document was last modified"""
+  _updatedAt: DateTime
+
+  """Current document revision"""
+  _rev: String
+  _key: String
+
+  """Main heading in the footer"""
+  title: String
+
+  """Brief description or tagline for the footer"""
+  description: String
+  links: [FooterLink]
+  socialLinks: [SocialLink]
+
+  """Copyright notice (year will be automatically added)"""
+  copyright: String
+}
+
+type FooterLink {
+  _key: String
+  _type: String
+  label: String
+  href: String
+  isExternal: Boolean
+}
+
+type SocialLink {
+  _key: String
+  _type: String
+  platform: String
+  url: String
 }
 
 input SanityImageAssetFilter {
@@ -691,6 +749,32 @@ input NavigationSorting {
   title: SortOrder
 }
 
+input FooterFilter {
+  """Apply filters on document level"""
+  _: Sanity_DocumentFilter
+  _id: IDFilter
+  _type: StringFilter
+  _createdAt: DatetimeFilter
+  _updatedAt: DatetimeFilter
+  _rev: StringFilter
+  _key: StringFilter
+  title: StringFilter
+  description: StringFilter
+  copyright: StringFilter
+}
+
+input FooterSorting {
+  _id: SortOrder
+  _type: SortOrder
+  _createdAt: SortOrder
+  _updatedAt: SortOrder
+  _rev: SortOrder
+  _key: SortOrder
+  title: SortOrder
+  description: SortOrder
+  copyright: SortOrder
+}
+
 input DocumentFilter {
   """Apply filters on document level"""
   _: Sanity_DocumentFilter
@@ -884,6 +968,21 @@ input NavigationItemFilter {
   isExternal: BooleanFilter
 }
 
+input FooterLinkFilter {
+  _key: StringFilter
+  _type: StringFilter
+  label: StringFilter
+  href: StringFilter
+  isExternal: BooleanFilter
+}
+
+input SocialLinkFilter {
+  _key: StringFilter
+  _type: StringFilter
+  platform: StringFilter
+  url: StringFilter
+}
+
 input CrossDatasetReferenceSorting {
   _key: SortOrder
   _type: SortOrder
@@ -938,4 +1037,19 @@ input NavigationItemSorting {
   label: SortOrder
   href: SortOrder
   isExternal: SortOrder
+}
+
+input FooterLinkSorting {
+  _key: SortOrder
+  _type: SortOrder
+  label: SortOrder
+  href: SortOrder
+  isExternal: SortOrder
+}
+
+input SocialLinkSorting {
+  _key: SortOrder
+  _type: SortOrder
+  platform: SortOrder
+  url: SortOrder
 }

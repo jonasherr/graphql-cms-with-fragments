@@ -4,6 +4,7 @@ import { graphql } from "gql.tada";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Navigation, navigationFragment } from "@/components/layout/Navigation";
+import { Footer, footerFragment } from "@/components/layout/Footer";
 import { createGraphQLClient } from "@/lib/graphql";
 
 export const revalidate = 60; // ISR: Revalidate every 60 seconds
@@ -32,6 +33,9 @@ const GET_POST_BY_SLUG = graphql(
     Navigation(id: "navigation") {
       ...Navigation
     }
+    Footer(id: "footer") {
+      ...Footer
+    }
     allPost(where: { slug: { current: { eq: $slug } } }, limit: 1) {
       _id
       title
@@ -41,7 +45,7 @@ const GET_POST_BY_SLUG = graphql(
     }
   }
 `,
-  [navigationFragment],
+  [navigationFragment, footerFragment],
 );
 
 export async function generateStaticParams() {
@@ -85,6 +89,7 @@ export default async function PostPage({ params }: PostPageProps) {
             </div>
           </main>
         </div>
+        <Footer data={data?.Footer} />
       </div>
     );
   }
@@ -137,6 +142,7 @@ export default async function PostPage({ params }: PostPageProps) {
           </article>
         </main>
       </div>
+      <Footer data={data?.Footer} />
     </div>
   );
 }

@@ -103,6 +103,119 @@ const navigation = defineType({
   },
 });
 
+const footerLink = defineType({
+  name: "footerLink",
+  title: "Footer Link",
+  type: "object",
+  fields: [
+    {
+      name: "label",
+      title: "Label",
+      type: "string",
+      validation: (rule) => rule.required(),
+    },
+    {
+      name: "href",
+      title: "URL/Path",
+      type: "string",
+      validation: (rule) => rule.required(),
+    },
+    {
+      name: "isExternal",
+      title: "External Link",
+      type: "boolean",
+      initialValue: false,
+    },
+  ],
+});
+
+const socialLink = defineType({
+  name: "socialLink",
+  title: "Social Link",
+  type: "object",
+  fields: [
+    {
+      name: "platform",
+      title: "Platform",
+      type: "string",
+      options: {
+        list: [
+          { title: "Twitter", value: "twitter" },
+          { title: "GitHub", value: "github" },
+          { title: "LinkedIn", value: "linkedin" },
+          { title: "Instagram", value: "instagram" },
+          { title: "Facebook", value: "facebook" },
+          { title: "YouTube", value: "youtube" },
+        ],
+      },
+      validation: (rule) => rule.required(),
+    },
+    {
+      name: "url",
+      title: "URL",
+      type: "url",
+      validation: (rule) => rule.required(),
+    },
+  ],
+});
+
+const footer = defineType({
+  name: "footer",
+  title: "Footer Settings",
+  type: "document",
+  fields: [
+    {
+      name: "title",
+      title: "Footer Title",
+      type: "string",
+      description: "Main heading in the footer",
+      validation: (rule) => rule.required(),
+    },
+    {
+      name: "description",
+      title: "Description",
+      type: "text",
+      description: "Brief description or tagline for the footer",
+      rows: 3,
+    },
+    {
+      name: "links",
+      title: "Footer Links",
+      type: "array",
+      of: [{ type: "footerLink" }],
+      description: "Navigation links in the footer",
+    },
+    {
+      name: "socialLinks",
+      title: "Social Links",
+      type: "array",
+      of: [{ type: "socialLink" }],
+      description: "Social media links",
+    },
+    {
+      name: "copyright",
+      title: "Copyright Text",
+      type: "string",
+      description: "Copyright notice (year will be automatically added)",
+      placeholder: "© Your Company Name. All rights reserved.",
+    },
+  ],
+  preview: {
+    select: {
+      title: "title",
+      links: "links",
+      socialLinks: "socialLinks",
+    },
+    prepare({ title, links, socialLinks }) {
+      const linkCount = (links?.length || 0) + (socialLinks?.length || 0);
+      return {
+        title: "Footer Settings",
+        subtitle: `${title} (${linkCount} links)`,
+      };
+    },
+  },
+});
+
 export const schema = {
-  types: [post, navigationItem, navigation],
+  types: [post, navigationItem, navigation, footerLink, socialLink, footer],
 };

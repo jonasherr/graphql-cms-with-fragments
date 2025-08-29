@@ -1,5 +1,6 @@
 import { registerUrql } from "@urql/next/rsc";
 import { Navigation, navigationFragment } from "@/components/layout/Navigation";
+import { Footer, footerFragment } from "@/components/layout/Footer";
 import { PostsList, postsListFragment } from "@/components/posts/PostsList";
 import { createGraphQLClient, graphql } from "@/lib/graphql";
 
@@ -11,12 +12,15 @@ const GET_HOME_PAGE = graphql(
     Navigation(id: "navigation") {
       ...Navigation
     }
+    Footer(id: "footer") {
+      ...Footer
+    }
     allPost(limit: $limit, offset: $offset, sort: [{ publishedAt: DESC }]) {
       ...PostsList
     }
   }
 `,
-  [navigationFragment, postsListFragment],
+  [navigationFragment, footerFragment, postsListFragment],
 );
 
 const { getClient } = registerUrql(createGraphQLClient);
@@ -42,6 +46,7 @@ export default async function Home() {
           <PostsList posts={posts} error={error} />
         </main>
       </div>
+      <Footer data={data?.Footer} />
     </div>
   );
 }

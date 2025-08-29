@@ -7,7 +7,7 @@ import { schema } from "./src/lib/schema";
 const singletonActions = new Set(["publish", "discardChanges", "restore"]);
 
 // Define the singleton document types
-const singletonTypes = new Set(["navigation"]);
+const singletonTypes = new Set(["navigation", "footer"]);
 
 export default defineConfig({
   name: "default",
@@ -29,6 +29,12 @@ export default defineConfig({
               .child(
                 S.document().schemaType("navigation").documentId("navigation"),
               ),
+
+            // Footer singleton
+            S.listItem()
+              .title("Footer Settings")
+              .id("footer")
+              .child(S.document().schemaType("footer").documentId("footer")),
 
             // Regular document types
             S.documentTypeListItem("post").title("Posts"),
