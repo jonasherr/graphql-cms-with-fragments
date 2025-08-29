@@ -159,6 +159,96 @@ const socialLink = defineType({
   ],
 });
 
+const seo = defineType({
+  name: "seo",
+  title: "SEO Settings",
+  type: "object",
+  fields: [
+    {
+      name: "metaTitle",
+      title: "Meta Title",
+      type: "string",
+      description: "Override the page title for SEO (optional)",
+    },
+    {
+      name: "metaDescription",
+      title: "Meta Description",
+      type: "text",
+      description: "Description for search engines",
+      rows: 2,
+    },
+  ],
+});
+
+const page = defineType({
+  name: "page",
+  title: "Page",
+  type: "document",
+  fields: [
+    {
+      name: "title",
+      title: "Title",
+      type: "string",
+      validation: (rule) => rule.required(),
+    },
+    {
+      name: "slug",
+      title: "Slug",
+      type: "slug",
+      options: {
+        source: "title",
+        maxLength: 96,
+      },
+      validation: (rule) => rule.required(),
+    },
+    {
+      name: "excerpt",
+      title: "Excerpt",
+      type: "text",
+      description: "Brief description for SEO and previews",
+      rows: 3,
+    },
+    {
+      name: "content",
+      title: "Content",
+      type: "array",
+      of: [{ type: "block" }],
+    },
+    {
+      name: "seo",
+      title: "SEO Settings",
+      type: "seo",
+    },
+    {
+      name: "isPublished",
+      title: "Published",
+      type: "boolean",
+      initialValue: true,
+      description: "Uncheck to hide this page from the website",
+    },
+    {
+      name: "publishedAt",
+      title: "Published at",
+      type: "datetime",
+      initialValue: () => new Date().toISOString(),
+      validation: (rule) => rule.required(),
+    },
+  ],
+  preview: {
+    select: {
+      title: "title",
+      slug: "slug.current",
+      isPublished: "isPublished",
+    },
+    prepare({ title, slug, isPublished }) {
+      return {
+        title: title,
+        subtitle: `/${slug}${!isPublished ? " (Draft)" : ""}`,
+      };
+    },
+  },
+});
+
 const footer = defineType({
   name: "footer",
   title: "Footer Settings",
@@ -217,5 +307,14 @@ const footer = defineType({
 });
 
 export const schema = {
-  types: [post, navigationItem, navigation, footerLink, socialLink, footer],
+  types: [
+    seo,
+    post,
+    page,
+    navigationItem,
+    navigation,
+    footerLink,
+    socialLink,
+    footer,
+  ],
 };

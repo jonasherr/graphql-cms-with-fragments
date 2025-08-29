@@ -38,6 +38,7 @@ export default defineConfig({
 
             // Regular document types
             S.documentTypeListItem("post").title("Posts"),
+            S.documentTypeListItem("page").title("Pages"),
           ]),
     }),
     visionTool(),

@@ -33,7 +33,7 @@ export default async function Home() {
   const posts = data?.allPost ?? [];
   return (
     <div className="min-h-screen">
-      <Navigation data={data?.Navigation} />
+      {data?.Navigation && <Navigation data={data.Navigation} />}
       <div className="p-8 pb-20 gap-16 sm:p-20">
         <main className="max-w-4xl mx-auto">
           <header className="mb-16 text-center">
@@ -46,7 +46,7 @@ export default async function Home() {
           <PostsList posts={posts} error={error} />
         </main>
       </div>
-      <Footer data={data?.Footer} />
+      {data?.Footer && <Footer data={data.Footer} />}
     </div>
   );
 }

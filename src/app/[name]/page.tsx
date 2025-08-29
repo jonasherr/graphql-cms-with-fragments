@@ -1,25 +1,19 @@
 import { PortableText } from "@portabletext/react";
 import { registerUrql } from "@urql/next/rsc";
-import { graphql } from "gql.tada";
+import { type Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Footer, footerFragment } from "@/components/layout/footer";
 import { Navigation, navigationFragment } from "@/components/layout/navigation";
-import { createGraphQLClient } from "@/lib/graphql";
+import { createGraphQLClient, graphql } from "@/lib/graphql";
 
 export const revalidate = 60; // ISR: Revalidate every 60 seconds
 
 const { getClient } = registerUrql(createGraphQLClient);
 
-interface PostPageProps {
-  params: Promise<{
-    slug: string;
-  }>;
-}
-
-const GET_POST_SLUGS = graphql(`
-  query GetPostSlugs {
-    allPost {
+const GET_PAGE_SLUGS = graphql(`
+  query GetPageSlugs {
+    allPage(where: { isPublished: { eq: true } }) {
       slug {
         current
       }
@@ -27,20 +21,24 @@ const GET_POST_SLUGS = graphql(`
   }
 `);
 
-const GET_POST_BY_SLUG = graphql(
+const GET_PAGE_BY_SLUG = graphql(
   `
-  query GetPostBySlug($slug: String!) {
+  query GetPageBySlug($slug: String!) {
     Navigation(id: "navigation") {
       ...Navigation
     }
     Footer(id: "footer") {
       ...Footer
     }
-    allPost(where: { slug: { current: { eq: $slug } } }, limit: 1) {
+    allPage(where: { slug: { current: { eq: $slug } }, isPublished: { eq: true } }, limit: 1) {
       _id
       title
       excerpt
       contentRaw
+      seo {
+        metaTitle
+        metaDescription
+      }
       publishedAt
     }
   }
@@ -50,25 +48,61 @@ const GET_POST_BY_SLUG = graphql(
 
 export async function generateStaticParams() {
   try {
-    const { data } = await getClient().query(GET_POST_SLUGS, {});
-    return (
-      data?.allPost
-        .filter((post) => post.slug?.current)
-        .map((post) => ({
-          slug: post.slug?.current,
-        })) ?? []
-    );
+    const { data } = await getClient().query(GET_PAGE_SLUGS, {});
+    if (!data?.allPage) return [];
+
+    return data.allPage
+      .filter((page) => page.slug?.current)
+      .map((page) => ({
+        name: page.slug?.current,
+      }));
   } catch (error) {
     console.error("Error generating static params:", error);
     return [];
   }
 }
 
-export default async function PostPage({ params }: PostPageProps) {
-  const { slug } = await params;
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const { name } = await params;
 
-  const { data, error } = await getClient().query(GET_POST_BY_SLUG, { slug });
-  const post = data?.allPost[0];
+  try {
+    const { data } = await getClient().query(GET_PAGE_BY_SLUG, { slug: name });
+    const page = data?.allPage?.[0];
+
+    if (!page) {
+      return {
+        title: "Page Not Found",
+      };
+    }
+
+    return {
+      title: page.seo?.metaTitle || page.title,
+      description: page.seo?.metaDescription || page.excerpt,
+    };
+  } catch (error) {
+    console.error("Error generating metadata:", error);
+    return {
+      title: "Page Not Found",
+    };
+  }
+}
+
+interface PageProps {
+  params: Promise<{
+    name: string;
+  }>;
+}
+
+export default async function GeneralPage({ params }: PageProps) {
+  const { name } = await params;
+
+  const { data, error } = await getClient().query(GET_PAGE_BY_SLUG, {
+    slug: name,
+  });
+  const page = data?.allPage?.[0];
+
   if (error) {
     return (
       <div className="min-h-screen">
@@ -77,7 +111,7 @@ export default async function PostPage({ params }: PostPageProps) {
           <main className="max-w-4xl mx-auto">
             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
               <h1 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
-                Error loading post
+                Error loading page
               </h1>
               <p className="text-red-600 dark:text-red-300">{error.message}</p>
               <Link
@@ -94,11 +128,11 @@ export default async function PostPage({ params }: PostPageProps) {
     );
   }
 
-  if (!post) {
+  if (!page) {
     notFound();
   }
 
-  const publishedAt = post.publishedAt;
+  const publishedAt = page.publishedAt;
 
   return (
     <div className="min-h-screen">
@@ -111,9 +145,9 @@ export default async function PostPage({ params }: PostPageProps) {
                 href="/"
                 className="inline-block mb-6 text-blue-600 dark:text-blue-400 hover:underline"
               >
-                ← Back to posts
+                ← Back to home
               </Link>
-              <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
+              <h1 className="text-4xl font-bold mb-4">{page.title}</h1>
               {publishedAt && (
                 <time
                   dateTime={publishedAt}
@@ -128,15 +162,15 @@ export default async function PostPage({ params }: PostPageProps) {
               )}
             </header>
 
-            {post.excerpt && (
+            {page.excerpt && (
               <div className="text-xl text-gray-600 dark:text-gray-400 mb-8 italic">
-                {post.excerpt}
+                {page.excerpt}
               </div>
             )}
 
-            {post.contentRaw && (
+            {page.contentRaw && (
               <div className="prose prose-lg dark:prose-invert max-w-none">
-                <PortableText value={post.contentRaw} />
+                <PortableText value={page.contentRaw} />
               </div>
             )}
           </article>
