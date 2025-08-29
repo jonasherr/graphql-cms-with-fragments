@@ -1,10 +1,10 @@
 import { PortableText } from "@portabletext/react";
 import { registerUrql } from "@urql/next/rsc";
+import { graphql } from "gql.tada";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Navigation } from "@/components/layout/Navigation";
-import { navigationData } from "@/components/layout/navigation-data";
-import { createGraphQLClient, graphql } from "@/lib/graphql";
+import { Navigation, navigationFragment } from "@/components/layout/Navigation";
+import { createGraphQLClient } from "@/lib/graphql";
 
 export const revalidate = 60; // ISR: Revalidate every 60 seconds
 
@@ -26,8 +26,12 @@ const GET_POST_SLUGS = graphql(`
   }
 `);
 
-const GET_POST_BY_SLUG = graphql(`
+const GET_POST_BY_SLUG = graphql(
+  `
   query GetPostBySlug($slug: String!) {
+    Navigation(id: "navigation") {
+      ...Navigation
+    }
     allPost(where: { slug: { current: { eq: $slug } } }, limit: 1) {
       _id
       title
@@ -36,7 +40,9 @@ const GET_POST_BY_SLUG = graphql(`
       publishedAt
     }
   }
-`);
+`,
+  [navigationFragment],
+);
 
 export async function generateStaticParams() {
   try {
@@ -59,11 +65,10 @@ export default async function PostPage({ params }: PostPageProps) {
 
   const { data, error } = await getClient().query(GET_POST_BY_SLUG, { slug });
   const post = data?.allPost[0];
-
   if (error) {
     return (
       <div className="min-h-screen">
-        <Navigation {...navigationData} />
+        <Navigation data={data?.Navigation} />
         <div className="p-8 pb-20 gap-16 sm:p-20">
           <main className="max-w-4xl mx-auto">
             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
@@ -92,7 +97,7 @@ export default async function PostPage({ params }: PostPageProps) {
 
   return (
     <div className="min-h-screen">
-      <Navigation />
+      <Navigation data={data?.Navigation} />
       <div className="p-8 pb-20 gap-16 sm:p-20">
         <main className="max-w-4xl mx-auto">
           <article>

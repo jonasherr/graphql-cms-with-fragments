@@ -33,6 +33,10 @@ type RootQuery {
     """Post document ID"""
     id: ID!
   ): Post
+  Navigation(
+    """Navigation document ID"""
+    id: ID!
+  ): Navigation
   Document(
     """Document document ID"""
     id: ID!
@@ -67,6 +71,16 @@ type RootQuery {
     """Offset at which to start returning documents from"""
     offset: Int
   ): [Post!]!
+  allNavigation(
+    where: NavigationFilter
+    sort: [NavigationSorting!]
+
+    """Max documents to return"""
+    limit: Int
+
+    """Offset at which to start returning documents from"""
+    offset: Int
+  ): [Navigation!]!
   allDocument(
     where: DocumentFilter
     sort: [DocumentSorting!]
@@ -268,6 +282,36 @@ type Slug {
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
 scalar JSON
+
+type Navigation implements Document {
+  """Document ID"""
+  _id: ID
+
+  """Document type"""
+  _type: String
+
+  """Date the document was created"""
+  _createdAt: DateTime
+
+  """Date the document was last modified"""
+  _updatedAt: DateTime
+
+  """Current document revision"""
+  _rev: String
+  _key: String
+
+  """The main title/brand name displayed in the navigation"""
+  title: String
+  items: [NavigationItem]
+}
+
+type NavigationItem {
+  _key: String
+  _type: String
+  label: String
+  href: String
+  isExternal: Boolean
+}
 
 input SanityImageAssetFilter {
   """Apply filters on document level"""
@@ -625,6 +669,28 @@ input SlugSorting {
   source: SortOrder
 }
 
+input NavigationFilter {
+  """Apply filters on document level"""
+  _: Sanity_DocumentFilter
+  _id: IDFilter
+  _type: StringFilter
+  _createdAt: DatetimeFilter
+  _updatedAt: DatetimeFilter
+  _rev: StringFilter
+  _key: StringFilter
+  title: StringFilter
+}
+
+input NavigationSorting {
+  _id: SortOrder
+  _type: SortOrder
+  _createdAt: SortOrder
+  _updatedAt: SortOrder
+  _rev: SortOrder
+  _key: SortOrder
+  title: SortOrder
+}
+
 input DocumentFilter {
   """Apply filters on document level"""
   _: Sanity_DocumentFilter
@@ -810,6 +876,14 @@ input SanityImageCropFilter {
   right: FloatFilter
 }
 
+input NavigationItemFilter {
+  _key: StringFilter
+  _type: StringFilter
+  label: StringFilter
+  href: StringFilter
+  isExternal: BooleanFilter
+}
+
 input CrossDatasetReferenceSorting {
   _key: SortOrder
   _type: SortOrder
@@ -856,4 +930,12 @@ input SanityImageCropSorting {
   bottom: SortOrder
   left: SortOrder
   right: SortOrder
+}
+
+input NavigationItemSorting {
+  _key: SortOrder
+  _type: SortOrder
+  label: SortOrder
+  href: SortOrder
+  isExternal: SortOrder
 }

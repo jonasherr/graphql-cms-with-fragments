@@ -1,35 +1,35 @@
 import { registerUrql } from "@urql/next/rsc";
-import { graphql } from "gql.tada";
-import { Navigation } from "@/components/layout/Navigation";
-import { navigationData } from "@/components/layout/navigation-data";
+import { Navigation, navigationFragment } from "@/components/layout/Navigation";
 import { PostsList, postsListFragment } from "@/components/posts/PostsList";
-import { createGraphQLClient } from "@/lib/graphql";
+import { createGraphQLClient, graphql } from "@/lib/graphql";
 
-export const revalidate = 60; // ISR: Revalidate every 60 seconds
+export const revalidate = 60;
 
-const GET_ALL_POSTS = graphql(
+const GET_HOME_PAGE = graphql(
   `
-  query GetAllPosts($limit: Int, $offset: Int) {
+  query GetHomePage($limit: Int, $offset: Int) {
+    Navigation(id: "navigation") {
+      ...Navigation
+    }
     allPost(limit: $limit, offset: $offset, sort: [{ publishedAt: DESC }]) {
       ...PostsList
     }
   }
 `,
-  [postsListFragment],
+  [navigationFragment, postsListFragment],
 );
 
 const { getClient } = registerUrql(createGraphQLClient);
 
 export default async function Home() {
-  const { data, error } = await getClient().query(GET_ALL_POSTS, {
+  const { data, error } = await getClient().query(GET_HOME_PAGE, {
     limit: 10,
     offset: 0,
   });
   const posts = data?.allPost ?? [];
-
   return (
     <div className="min-h-screen">
-      <Navigation {...navigationData} />
+      <Navigation data={data?.Navigation} />
       <div className="p-8 pb-20 gap-16 sm:p-20">
         <main className="max-w-4xl mx-auto">
           <header className="mb-16 text-center">

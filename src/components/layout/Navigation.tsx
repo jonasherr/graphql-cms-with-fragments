@@ -1,17 +1,27 @@
-"use client";
-
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import type { NavigationItem } from "./navigation-data";
+import { type FragmentOf, graphql, readFragment } from "@/lib/graphql";
+import { NavLink } from "./nav-link";
+import { navigationLinkFragment } from "./nav-link-fragment";
 
-interface NavigationClientProps {
-  title: string;
-  items: NavigationItem[];
+export const navigationFragment = graphql(
+  `
+  fragment Navigation on Navigation {
+    title
+    items {
+      _key
+      ...NavigationLink
+    }
+  }
+`,
+  [navigationLinkFragment],
+);
+
+interface NavigationProps {
+  data: FragmentOf<typeof navigationFragment>;
 }
 
-export function Navigation({ title, items }: NavigationClientProps) {
-  const pathname = usePathname();
-
+export function Navigation({ data }: NavigationProps) {
+  const navigationData = readFragment(navigationFragment, data);
   return (
     <nav className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
       <div className="max-w-4xl mx-auto px-8 sm:px-20">
@@ -21,26 +31,12 @@ export function Navigation({ title, items }: NavigationClientProps) {
               href="/"
               className="text-xl font-bold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
             >
-              {title}
+              {navigationData.title}
             </Link>
 
             <div className="hidden md:flex items-center space-x-6">
-              {items.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`text-sm font-medium transition-colors ${
-                    pathname === item.href
-                      ? "text-blue-600 dark:text-blue-400"
-                      : "text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
-                  }`}
-                  {...(item.isExternal && {
-                    target: "_blank",
-                    rel: "noopener noreferrer",
-                  })}
-                >
-                  {item.label}
-                </Link>
+              {navigationData.items.map((item) => (
+                <NavLink key={item._key} data={item} />
               ))}
             </div>
           </div>
@@ -57,7 +53,7 @@ export function Navigation({ title, items }: NavigationClientProps) {
                 viewBox="0 0 24 24"
                 stroke="currentColor"
               >
-                <title>Hamburger Menue</title>
+                <title>Menu</title>
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"

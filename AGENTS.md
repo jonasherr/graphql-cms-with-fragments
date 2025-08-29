@@ -44,3 +44,55 @@
 - **Error Handling**: Always check for `error` object and provide user-friendly error UI
 - **ISR**: Use `export const revalidate = 60` for Incremental Static Regeneration
 - **Scalars**: DateTime, Date (string), JSON (TypedObject from Sanity)
+
+## GraphQL Fragment Colocation
+
+### Fragment Definition Rules
+- **Server Components**: Define fragments directly in component files
+- **Client Components**: Define fragments in separate `.ts` files to avoid client/server boundary issues
+- **Fragment files**: Use `-fragment.ts` suffix (e.g., `nav-link-fragment.ts`)
+
+### Client Component Pattern
+When a component needs `"use client"` directive:
+
+1. **Fragment Definition** (`component-fragment.ts`):
+   ```typescript
+   import { graphql } from "@/lib/graphql";
+   
+   export const componentFragment = graphql(`
+     fragment ComponentName on Type {
+       field1
+       field2
+     }
+   `);
+   ```
+
+2. **Client Component** (`component.tsx`):
+   ```typescript
+   "use client";
+   
+   import { type FragmentOf } from "@/lib/graphql";
+   import type { componentFragment } from "./component-fragment";
+   
+   interface Props {
+     data: FragmentOf<typeof componentFragment>;
+   }
+   
+   export function Component({ data }: Props) {
+     // Client-side logic (hooks, event handlers, etc.)
+   }
+   ```
+
+3. **Parent Server Component**:
+   ```typescript
+   import { componentFragment } from "./component-fragment";
+   import { Component } from "./component";
+   
+   const parentFragment = graphql(`...`, [componentFragment]);
+   ```
+
+### Why This Pattern?
+- **Prevents Runtime Errors**: Avoids "f.definitions is not iterable" errors
+- **Maintains Colocation**: Fragments stay close to components that use them
+- **Respects Boundaries**: Separates server-side GraphQL logic from client-side interactivity
+- **Type Safety**: Client components get proper TypeScript types via `FragmentOf<>`

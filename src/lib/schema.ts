@@ -43,6 +43,66 @@ const post = defineType({
   ],
 });
 
+const navigationItem = defineType({
+  name: "navigationItem",
+  title: "Navigation Item",
+  type: "object",
+  fields: [
+    {
+      name: "label",
+      title: "Label",
+      type: "string",
+      validation: (rule) => rule.required(),
+    },
+    {
+      name: "href",
+      title: "URL/Path",
+      type: "string",
+      validation: (rule) => rule.required(),
+    },
+    {
+      name: "isExternal",
+      title: "External Link",
+      type: "boolean",
+      initialValue: false,
+    },
+  ],
+});
+
+const navigation = defineType({
+  name: "navigation",
+  title: "Navigation Settings",
+  type: "document",
+  fields: [
+    {
+      name: "title",
+      title: "Site Title",
+      type: "string",
+      description: "The main title/brand name displayed in the navigation",
+      validation: (rule) => rule.required(),
+    },
+    {
+      name: "items",
+      title: "Navigation Items",
+      type: "array",
+      of: [{ type: "navigationItem" }],
+      validation: (rule) => rule.required().min(1),
+    },
+  ],
+  preview: {
+    select: {
+      title: "title",
+      items: "items",
+    },
+    prepare({ title, items }) {
+      return {
+        title: "Navigation Settings",
+        subtitle: `${title} (${items?.length || 0} items)`,
+      };
+    },
+  },
+});
+
 export const schema = {
-  types: [post],
+  types: [post, navigationItem, navigation],
 };
