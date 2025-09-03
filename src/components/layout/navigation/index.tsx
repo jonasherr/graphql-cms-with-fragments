@@ -35,9 +35,10 @@ export function Navigation({ data }: NavigationProps) {
             </Link>
 
             <div className="hidden md:flex items-center space-x-6">
-              {navigationData.items.map((item) => (
-                <NavLink key={item._key} data={item} />
-              ))}
+              {navigationData?.items?.map((item) => {
+                if (!item) return null;
+                return <NavLink key={item._key} data={item} />;
+              })}
             </div>
           </div>
 

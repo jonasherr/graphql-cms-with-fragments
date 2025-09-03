@@ -1,11 +1,10 @@
 import { PortableText } from "@portabletext/react";
 import { registerUrql } from "@urql/next/rsc";
-import { graphql } from "gql.tada";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Footer, footerFragment } from "@/components/layout/footer";
 import { Navigation, navigationFragment } from "@/components/layout/navigation";
-import { createGraphQLClient } from "@/lib/graphql";
+import { createGraphQLClient, graphql } from "@/lib/graphql";
 
 const { getClient } = registerUrql(createGraphQLClient);
 

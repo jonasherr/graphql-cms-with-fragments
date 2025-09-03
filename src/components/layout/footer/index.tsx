@@ -1,6 +1,5 @@
-import Link from "next/link";
 import { type FragmentOf, graphql, readFragment } from "@/lib/graphql";
-import { footerLinkFragment } from "./footer-link-fragment";
+import { FooterLink, footerLinkFragment } from "./footer-link";
 import { SocialLinks, socialLinksFragment } from "./social-links";
 
 export const footerFragment = graphql(
@@ -46,20 +45,8 @@ export function Footer({ data }: FooterProps) {
             {footerData.links && footerData.links.length > 0 && (
               <div className="flex flex-wrap gap-6">
                 {footerData.links.map((link) => {
-                  const linkData = readFragment(footerLinkFragment, link);
-                  return (
-                    <Link
-                      key={link._key}
-                      href={linkData.href}
-                      className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                      {...(linkData.isExternal && {
-                        target: "_blank",
-                        rel: "noopener noreferrer",
-                      })}
-                    >
-                      {linkData.label}
-                    </Link>
-                  );
+                  if (!link) return null;
+                  return <FooterLink key={link._key} data={link} />;
                 })}
               </div>
             )}
