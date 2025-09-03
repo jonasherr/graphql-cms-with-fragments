@@ -4,8 +4,6 @@ import { Navigation, navigationFragment } from "@/components/layout/navigation";
 import { PostsList, postsListFragment } from "@/components/posts/posts-list";
 import { createGraphQLClient, graphql } from "@/lib/graphql";
 
-export const revalidate = 60;
-
 const GET_HOME_PAGE = graphql(
   `
   query GetHomePage($limit: Int, $offset: Int) {

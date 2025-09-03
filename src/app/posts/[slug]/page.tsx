@@ -7,8 +7,6 @@ import { Footer, footerFragment } from "@/components/layout/footer";
 import { Navigation, navigationFragment } from "@/components/layout/navigation";
 import { createGraphQLClient } from "@/lib/graphql";
 
-export const revalidate = 60; // ISR: Revalidate every 60 seconds
-
 const { getClient } = registerUrql(createGraphQLClient);
 
 interface PostPageProps {
