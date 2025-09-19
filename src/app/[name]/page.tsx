@@ -3,6 +3,7 @@ import { registerUrql } from "@urql/next/rsc";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { cache } from "react";
 import { createGraphQLClient, graphql } from "@/lib/graphql";
 
 const { getClient } = registerUrql(createGraphQLClient);
@@ -33,6 +34,13 @@ const GET_PAGE_BY_SLUG = graphql(`
   }
 `);
 
+// use React cache function to deduplicate requests
+const getPageData = cache((name: string) =>
+  getClient().query(GET_PAGE_BY_SLUG, {
+    slug: name,
+  }),
+);
+
 export async function generateStaticParams() {
   try {
     const { data } = await getClient().query(GET_PAGE_SLUGS, {});
@@ -55,7 +63,7 @@ export async function generateMetadata({
   const { name } = await params;
 
   try {
-    const { data } = await getClient().query(GET_PAGE_BY_SLUG, { slug: name });
+    const { data } = await getPageData(name);
     const page = data?.allPage?.[0];
 
     if (!page) {
@@ -85,9 +93,7 @@ interface PageProps {
 export default async function GeneralPage({ params }: PageProps) {
   const { name } = await params;
 
-  const { data, error } = await getClient().query(GET_PAGE_BY_SLUG, {
-    slug: name,
-  });
+  const { data, error } = await getPageData(name);
   const page = data?.allPage?.[0];
 
   if (error) {
