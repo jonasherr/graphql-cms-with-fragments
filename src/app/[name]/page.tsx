@@ -6,17 +6,9 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 import { createGraphQLClient, graphql } from "@/lib/graphql";
 
-const { getClient } = registerUrql(createGraphQLClient);
+export const dynamic = "force-static";
 
-const GET_PAGE_SLUGS = graphql(`
-  query GetPageSlugs {
-    allPage(where: { isPublished: { eq: true } }) {
-      slug {
-        current
-      }
-    }
-  }
-`);
+const { getClient } = registerUrql(createGraphQLClient);
 
 const GET_PAGE_BY_SLUG = graphql(`
   query GetPageBySlug($slug: String!) {
@@ -40,22 +32,6 @@ const getPageData = cache((name: string) =>
     slug: name,
   }),
 );
-
-export async function generateStaticParams() {
-  try {
-    const { data } = await getClient().query(GET_PAGE_SLUGS, {});
-    if (!data?.allPage) return [];
-
-    return data.allPage
-      .filter((page) => page.slug?.current)
-      .map((page) => ({
-        name: page.slug?.current,
-      }));
-  } catch (error) {
-    console.error("Error generating static params:", error);
-    return [];
-  }
-}
 
 export async function generateMetadata({
   params,

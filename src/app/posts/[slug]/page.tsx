@@ -6,6 +6,8 @@ import { Author, authorFragment } from "@/components/posts/author";
 import { PostHeader, postHeaderFragment } from "@/components/posts/post-header";
 import { createGraphQLClient, graphql } from "@/lib/graphql";
 
+export const dynamic = "force-static";
+
 const { getClient } = registerUrql(createGraphQLClient);
 
 interface PostPageProps {
@@ -13,16 +15,6 @@ interface PostPageProps {
     slug: string;
   }>;
 }
-
-const GET_POST_SLUGS = graphql(`
-  query GetPostSlugs {
-    allPost {
-      slug {
-        current
-      }
-    }
-  }
-`);
 
 const GET_POST_BY_SLUG = graphql(
   `
@@ -39,22 +31,6 @@ const GET_POST_BY_SLUG = graphql(
 `,
   [authorFragment, postHeaderFragment],
 );
-
-export async function generateStaticParams() {
-  try {
-    const { data } = await getClient().query(GET_POST_SLUGS, {});
-    return (
-      data?.allPost
-        .filter((post) => post.slug?.current)
-        .map((post) => ({
-          slug: post.slug?.current,
-        })) ?? []
-    );
-  } catch (error) {
-    console.error("Error generating static params:", error);
-    return [];
-  }
-}
 
 export default async function PostPage({ params }: PostPageProps) {
   const { slug } = await params;
