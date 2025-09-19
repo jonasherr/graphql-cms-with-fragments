@@ -1,5 +1,50 @@
 import { defineType } from "sanity";
 
+const author = defineType({
+  name: "author",
+  title: "Author",
+  type: "document",
+  fields: [
+    {
+      name: "name",
+      title: "Name",
+      type: "string",
+      validation: (rule) => rule.required(),
+    },
+    {
+      name: "slug",
+      title: "Slug",
+      type: "slug",
+      options: {
+        source: "name",
+        maxLength: 96,
+      },
+      validation: (rule) => rule.required(),
+    },
+    {
+      name: "bio",
+      title: "Bio",
+      type: "text",
+      description: "Short biography of the author",
+      rows: 3,
+    },
+    {
+      name: "image",
+      title: "Profile Image",
+      type: "image",
+      options: {
+        hotspot: true,
+      },
+    },
+  ],
+  preview: {
+    select: {
+      title: "name",
+      media: "image",
+    },
+  },
+});
+
 const post = defineType({
   name: "post",
   title: "Post",
@@ -19,6 +64,13 @@ const post = defineType({
         source: "title",
         maxLength: 96,
       },
+      validation: (rule) => rule.required(),
+    },
+    {
+      name: "author",
+      title: "Author",
+      type: "reference",
+      to: [{ type: "author" }],
       validation: (rule) => rule.required(),
     },
     {
@@ -309,6 +361,7 @@ const footer = defineType({
 export const schema = {
   types: [
     seo,
+    author,
     post,
     page,
     navigationItem,

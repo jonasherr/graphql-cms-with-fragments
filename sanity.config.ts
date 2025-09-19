@@ -37,6 +37,7 @@ export default defineConfig({
               .child(S.document().schemaType("footer").documentId("footer")),
 
             // Regular document types
+            S.documentTypeListItem("author").title("Authors"),
             S.documentTypeListItem("post").title("Posts"),
             S.documentTypeListItem("page").title("Pages"),
           ]),

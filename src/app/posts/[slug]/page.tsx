@@ -2,6 +2,7 @@ import { PortableText } from "@portabletext/react";
 import { registerUrql } from "@urql/next/rsc";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Author, authorFragment } from "@/components/posts/author";
 import { createGraphQLClient, graphql } from "@/lib/graphql";
 
 const { getClient } = registerUrql(createGraphQLClient);
@@ -22,7 +23,8 @@ const GET_POST_SLUGS = graphql(`
   }
 `);
 
-const GET_POST_BY_SLUG = graphql(`
+const GET_POST_BY_SLUG = graphql(
+  `
   query GetPostBySlug($slug: String!) {
     allPost(where: { slug: { current: { eq: $slug } } }, limit: 1) {
       _id
@@ -30,9 +32,14 @@ const GET_POST_BY_SLUG = graphql(`
       excerpt
       contentRaw
       publishedAt
+      author {
+        ...Author
+      }
     }
   }
-`);
+`,
+  [authorFragment],
+);
 
 export async function generateStaticParams() {
   try {
@@ -114,6 +121,8 @@ export default async function PostPage({ params }: PostPageProps) {
           <PortableText value={post.contentRaw} />
         </div>
       )}
+
+      {post.author && <Author data={post.author} />}
     </article>
   );
 }
