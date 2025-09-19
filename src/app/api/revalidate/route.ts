@@ -1,4 +1,4 @@
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { type NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -12,12 +12,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: "Invalid secret" }, { status: 401 });
     }
 
-    // Navigation/Footer changes revalidate all pages
-    if (_type === "navigation" || _type === "footer") {
-      revalidatePath("/", "layout"); // Revalidates all pages
+    // Navigation changes revalidate navigation cache tag
+    if (_type === "navigation") {
+      revalidateTag("navigation");
       return NextResponse.json({
         revalidated: true,
-        scope: "all pages",
+        scope: "navigation",
+        type: _type,
+      });
+    }
+
+    // Footer changes revalidate footer cache tag
+    if (_type === "footer") {
+      revalidateTag("footer");
+      return NextResponse.json({
+        revalidated: true,
+        scope: "footer",
         type: _type,
       });
     }
