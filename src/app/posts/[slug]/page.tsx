@@ -3,6 +3,7 @@ import { registerUrql } from "@urql/next/rsc";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Author, authorFragment } from "@/components/posts/author";
+import { PostHeader, postHeaderFragment } from "@/components/posts/post-header";
 import { createGraphQLClient, graphql } from "@/lib/graphql";
 
 const { getClient } = registerUrql(createGraphQLClient);
@@ -27,18 +28,16 @@ const GET_POST_BY_SLUG = graphql(
   `
   query GetPostBySlug($slug: String!) {
     allPost(where: { slug: { current: { eq: $slug } } }, limit: 1) {
-      _id
-      title
       excerpt
       contentRaw
-      publishedAt
       author {
         ...Author
       }
+      ...PostHeader
     }
   }
 `,
-  [authorFragment],
+  [authorFragment, postHeaderFragment],
 );
 
 export async function generateStaticParams() {
@@ -84,31 +83,9 @@ export default async function PostPage({ params }: PostPageProps) {
     notFound();
   }
 
-  const publishedAt = post.publishedAt;
-
   return (
     <article>
-      <header className="mb-8">
-        <Link
-          href="/"
-          className="inline-block mb-6 text-blue-600 dark:text-blue-400 hover:underline"
-        >
-          ← Back to posts
-        </Link>
-        <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
-        {publishedAt && (
-          <time
-            dateTime={publishedAt}
-            className="text-gray-600 dark:text-gray-400"
-          >
-            {new Date(publishedAt).toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
-          </time>
-        )}
-      </header>
+      <PostHeader data={post} />
 
       {post.excerpt && (
         <div className="text-xl text-gray-600 dark:text-gray-400 mb-8 italic">

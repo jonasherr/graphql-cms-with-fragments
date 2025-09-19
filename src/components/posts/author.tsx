@@ -10,7 +10,6 @@ export const authorFragment = graphql(`
 
 export function Author(props: { data: FragmentOf<typeof authorFragment> }) {
   const author = readFragment(authorFragment, props.data);
-  if (!author) return null;
 
   return (
     <div className="border-t border-gray-200 dark:border-gray-700 pt-8 mt-12">
